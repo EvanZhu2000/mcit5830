@@ -41,13 +41,14 @@ def get_ape_info(ape_id):
     if token_uri.startswith('ipfs://'):
         ipfs_hash_with_path = token_uri[7:]  # Remove 'ipfs://' prefix
         # Use Pinata gateway to fetch metadata
-        gateway_url = f"https://gateway.pinata.cloud/ipfs/{ipfs_hash_with_path}"
+        # gateway_url = f"https://gateway.pinata.cloud/ipfs/{ipfs_hash_with_path}"
+        gateway_url = f"https://cloudflare-ipfs.com/ipfs/{ipfs_hash_with_path}"
     else:
         gateway_url = token_uri
     
     # Fetch metadata from IPFS via Pinata gateway
     try:
-        response = requests.get(gateway_url, timeout=60) # increase timeout to pass the test case?
+        response = requests.get(gateway_url, timeout=10) # increase timeout to pass the test case?
         if response.status_code == 200:
             metadata = response.json()
             
