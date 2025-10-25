@@ -41,8 +41,10 @@ def get_ape_info(ape_id):
     if token_uri.startswith('ipfs://'):
         ipfs_hash_with_path = token_uri[7:]  # Remove 'ipfs://' prefix
         # Use Pinata gateway to fetch metadata
-        # gateway_url = f"https://gateway.pinata.cloud/ipfs/{ipfs_hash_with_path}"
-        gateway_url = f"https://cloudflare-ipfs.com/ipfs/{ipfs_hash_with_path}"
+        # gateway_url = f"https://gateway.pinata.cloud/ipfs/{ipfs_hash_with_path}" # working in local, cannot pass test cases
+        # gateway_url = f"https://cloudflare-ipfs.com/ipfs/{ipfs_hash_with_path}" # not working
+        # gateway_url = f"https://ipfs.io/ipfs/{ipfs_hash_with_path}" # not working as well
+        gateway_url = f"https://dweb.link/ipfs/{ipfs_hash_with_path}"
     else:
         gateway_url = token_uri
     
