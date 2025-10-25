@@ -15,7 +15,8 @@ with open('ape_abi.json', 'r') as f:
 
 ############################
 # Connect to an Ethereum node
-api_url = "https://gateway.pinata.cloud/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1"  # YOU WILL NEED TO PROVIDE THE URL OF AN ETHEREUM NODE
+INFURA_KEY = "7a22d2b37e2d43faa3d400346ef7b9b7"
+api_url = f"https://mainnet.infura.io/v3/{INFURA_KEY}"  # YOU WILL NEED TO PROVIDE THE URL OF AN ETHEREUM NODE
 provider = HTTPProvider(api_url)
 web3 = Web3(provider)
 
@@ -33,23 +34,45 @@ def get_ape_info(ape_id):
     owner = contract.functions.ownerOf(ape_id).call()
     data['owner'] = owner
 
+    # Get token URI
+    token_uri = contract.functions.tokenURI(ape_id).call()
+    
+    # Convert IPFS URI to HTTP URL using Pinata gateway
+    if token_uri.startswith('ipfs://'):
+        ipfs_hash_with_path = token_uri[7:]  # Remove 'ipfs://' prefix
+        # Use Pinata gateway to fetch metadata
+        gateway_url = f"https://gateway.pinata.cloud/ipfs/{ipfs_hash_with_path}"
+    else:
+        gateway_url = token_uri
+    
+    # Fetch metadata from IPFS via Pinata gateway
     try:
-        response = requests.get(api_url)
-        metadata = response.json()
-        
-        # Extract image and eyes attributes
-        data['image'] = metadata.get('image', '')
-        
-        # Find eyes attribute
-        attributes = metadata.get('attributes', [])
-        for attr in attributes:
-            if attr.get('trait_type') == 'Eyes':
-                data['eyes'] = attr.get('value', '')
-                break
+        response = requests.get(gateway_url, timeout=10)
+        if response.status_code == 200:
+            metadata = response.json()
+            
+            # Extract image and eyes attributes
+            data['image'] = metadata.get('image', '')
+            
+            # Find eyes attribute
+            attributes = metadata.get('attributes', [])
+            for attr in attributes:
+                if attr.get('trait_type') == 'Eyes':
+                    data['eyes'] = attr.get('value', '')
+                    break
+        else:
+            print(f"Error fetching metadata: HTTP {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Request error: {e}")
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
     except Exception as e:
-        print(f"Error fetching metadata: {e}")
+        print(f"Unexpected error: {e}")     
 
     assert isinstance(data, dict), f'get_ape_info{ape_id} should return a dict'
     assert all([a in data.keys() for a in
                 ['owner', 'image', 'eyes']]), f"return value should include the keys 'owner','image' and 'eyes'"
     return data
+
+if __name__ == "__main__":
+    print(get_ape_info(1))
