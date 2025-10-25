@@ -47,7 +47,7 @@ def get_ape_info(ape_id):
     
     # Fetch metadata from IPFS via Pinata gateway
     try:
-        response = requests.get(gateway_url, timeout=10)
+        response = requests.get(gateway_url, timeout=60) # increase timeout to pass the test case?
         if response.status_code == 200:
             metadata = response.json()
             
@@ -75,4 +75,4 @@ def get_ape_info(ape_id):
     return data
 
 if __name__ == "__main__":
-    print(get_ape_info(1))
+    print(get_ape_info(8033))
